@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const shopRoutes = require('./BE/routes/shop-routes');
 const userRoutes = require('./BE/routes/user-routes');
 const cors = require('cors');
-const socketIO = require('socket.io'); // Importujte socket.io
 
 const app = express();
 const port = 3001;
