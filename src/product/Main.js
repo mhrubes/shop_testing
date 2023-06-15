@@ -24,7 +24,7 @@ const Main = () => {
             counter += item.count;
         });
         setShoppingCartItemCount(counter);
-    }, [shoppingCart]); // Přidejte shoppingCart jako závislost
+    }, [shoppingCart]);
 
     useEffect(() => {
         if (isLoggedIn !== true) {
@@ -78,7 +78,7 @@ const Main = () => {
 
             if (existingProductName === undefined &&
                 (modalProductName.length >= 2 && modalProductName.length < 1000) &&
-                (modalProductDescription.length >= 0 && modalProductDescription.length < 1000) &&
+                (modalProductDescription.length < 1000) &&
                 (modalProductPrice >= 0 && !isNaN(modalProductPrice))) {
                 product.name = modalProductName;
                 product.description = modalProductDescription;

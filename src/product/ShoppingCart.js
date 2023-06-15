@@ -6,8 +6,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 const ShoppingCart = () => {
-  const { shoppingCart, isLoggedIn, emptyShoppingCart, updateShoppingCartItem, deleteShoppingCartItem } = useContext(AppContext);
+  const { products, shoppingCart, isLoggedIn, setShoppingCart, emptyShoppingCart, updateShoppingCartItem, deleteShoppingCartItem } = useContext(AppContext);
   const navigate = useNavigate();
+  const [shoppingCartItems, setShoppingCartItems] = useState(shoppingCart);
   const [shoppingCartItemCount, setShoppingCartItemCount] = useState(0);
   const [shoppingCartItemsPrice, setShoppingCartItemsPrice] = useState(0);
 
@@ -20,7 +21,9 @@ const ShoppingCart = () => {
     });
     setShoppingCartItemCount(counter);
     setShoppingCartItemsPrice(countPrice);
-  }, [shoppingCart]); // Přidejte shoppingCart jako závislost
+
+    setShoppingCartItems(shoppingCart);
+  }, [shoppingCart, products]);
 
   useEffect(() => {
     if (isLoggedIn !== true) {
@@ -28,6 +31,18 @@ const ShoppingCart = () => {
     }
     return () => { }
   });
+
+  useEffect(() => {
+    const updateShoppingCart = () => {
+      const updatedShoppingCart = shoppingCart.filter(item => products.some(product => product._id === item._id));
+      setShoppingCart(updatedShoppingCart);
+      setShoppingCartItems(updatedShoppingCart);
+    };
+  
+    const delay = setTimeout(updateShoppingCart, 500);
+  
+    return () => clearTimeout(delay);
+  }, [products, shoppingCart]);
 
   const handleUpdateShoppingCartItem = (itemId, operation) => {
     if (operation)
@@ -57,8 +72,8 @@ const ShoppingCart = () => {
           </button>
         </div>}
 
-      <div className="row m-0">
-        {shoppingCart !== [] && shoppingCart.map((item) => (
+      <div className="row m-0 mt-1">
+        {shoppingCartItems !== [] && shoppingCartItems.map((item) => (
           <div key={item._id} className="col-md-4">
             <div className="card text-center">
               <div className="card-body">
@@ -87,7 +102,7 @@ const ShoppingCart = () => {
         ))}
       </div>
 
-      {shoppingCart.length > 0 && <div>
+      {shoppingCartItems.length > 0 && <div>
         <hr />
         <table className='table mt-3'>
           <thead>
@@ -99,7 +114,7 @@ const ShoppingCart = () => {
             </tr>
           </thead>
           <tbody>
-            {shoppingCart !== [] && shoppingCart.map((item) => (
+            {shoppingCartItems !== [] && shoppingCartItems.map((item) => (
               <tr key={item._id}>
                 <td>{item.name}</td>
                 <td>{item.price}</td>
@@ -111,7 +126,7 @@ const ShoppingCart = () => {
         </table>
       </div>}
 
-      {shoppingCart.length > 0 &&
+      {shoppingCartItems.length > 0 &&
         <div className="row m-0 mb-5">
           <hr />
           <div className="col-md-6"></div>
@@ -125,7 +140,7 @@ const ShoppingCart = () => {
           </div>
         </div>}
 
-      {shoppingCart.length === 0 &&
+      {shoppingCartItems.length === 0 &&
         <h3>Váš košík je prázdný</h3>
       }
 

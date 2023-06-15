@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap';
 import { v4 as uuidv4 } from 'uuid';
-import { getAllShopProducts, createShopProduct, getAllUsers, deleteShopProduct, updateShopProduct } from '../calls'; // Import funkce pro načítání dat z MongoDB
+import { getAllShopProducts, createShopProduct, getAllUsers, deleteShopProduct, updateShopProduct } from '../calls'; 
 
 import { rolesList } from '../data';
 
@@ -34,25 +34,6 @@ const ProductProvider = ({ children }) => {
 
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const updateShoppingCart = () => {
-      const updatedCart = shoppingCart.map((item) => {
-        const productInCart = products.find((product) => product._id === item._id);
-        if (productInCart && productInCart.name !== item.name) {
-          return { ...productInCart, count: item.count };
-        }
-        return item;
-      });
-      setShoppingCart(updatedCart);
-    };
-
-    updateShoppingCart();
-    const interval = setInterval(updateShoppingCart, 5000);
-
-    return () => clearInterval(interval);
-
-  }, [products]);
 
   useEffect(() => {
     const updateShoppingCart = () => {
@@ -114,11 +95,15 @@ const ProductProvider = ({ children }) => {
   const removeProduct = async (productId) => {
     try {
       const updatedProducts = products.filter((product) => product._id !== productId);
-      const updatedShoppingCart = shoppingCart.filter((item) => item._id !== productId);
+      setProducts(updatedProducts);
+
+      const indexCart = shoppingCart.findIndex((item) => item._id === productId);
+      if (indexCart !== -1) {
+        shoppingCart.splice(indexCart, 1);
+        setShoppingCart([...shoppingCart]);
+      }
 
       const data = await deleteShopProduct(productId);
-      setProducts(updatedProducts);
-      setShoppingCart(updatedShoppingCart);
 
       return data;
     } catch (error) {

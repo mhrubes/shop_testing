@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Joi = require('joi');
 const { ItemProductCreate, ItemProductDelete, ItemProductUpdate } = require('../model/shop-model');
 const { productValidationCreateSchema, productValidationDeleteSchema, productValidationUpdateSchema } = require('../validation/shop');
 
