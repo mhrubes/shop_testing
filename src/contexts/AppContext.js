@@ -40,7 +40,7 @@ const ProductProvider = ({ children }) => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(fetchData, 100);
 
     return () => clearInterval(interval);
   }, []);
