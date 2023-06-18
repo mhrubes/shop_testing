@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { ItemProductCreate, ItemProductDelete, ItemProductUpdate } = require('../model/shop-model');
 const { productValidationCreateSchema, productValidationDeleteSchema, productValidationUpdateSchema } = require('../validation/shop');
+const { ItemCategoryCreate } = require('../model/category-model');
 
 // Endpoint pro získání všech položek
 router.get('/getAllProducts', async (req, res) => {
@@ -15,7 +16,7 @@ router.get('/getAllProducts', async (req, res) => {
 
 router.post('/createProduct', async (req, res) => {
     try {
-        const { _id, name, description, price } = req.body;
+        const { _id, name, description, price, stock, category, __v } = req.body;
 
         const { error } = productValidationCreateSchema.validate(req.body, { abortEarly: false });
 
@@ -26,13 +27,23 @@ router.post('/createProduct', async (req, res) => {
 
         // Kontrola existence produktu se stejným názvem
         const existingProduct = await ItemProductCreate.findOne({ name });
-
         if (existingProduct) {
             return res.status(400).json({ error: 'Produkt se stejným názvem již existuje.' });
         }
 
+        // Kontrola existence kategorie se stejným názvem
+        const existingCategory = await ItemCategoryCreate.findOne({ name: category });
+
+        if (!existingCategory) {
+            return res.status(400).json({ error: 'Kategorie s tímto názvem neexistuje.' });
+        }
+
         if (price < 0) {
             return res.status(400).json({ error: 'Cena nemůže být záporná hodnota.' });
+        }
+
+        if (stock < 0) {
+            return res.status(400).json({ error: 'Počet kusů nemůže být v záporné hodnotě.' });
         }
 
         // Validace vstupních dat podle modelu
@@ -41,6 +52,9 @@ router.post('/createProduct', async (req, res) => {
             name,
             description,
             price,
+            stock,
+            category,
+            __v
         });
 
         const savedProduct = await newProduct.save();
@@ -76,13 +90,21 @@ router.put('/updateProduct', async (req, res) => {
         }
 
         const existingProduct = await ItemProductCreate.findOne({ name: req.body.name });
-
         if (existingProduct && existingProduct._id.toString() !== productId) {
             return res.status(400).json({ error: 'Produkt se stejným názvem již existuje.' });
         }
 
+        const existingCategory = await ItemCategoryCreate.findOne({ name: req.body.category });
+        if (!existingCategory) {
+            return res.status(400).json({ error: 'Kategorie s tímto názvem neexistuje.' });
+        }
+
         if (req.body.price < 0) {
             return res.status(400).json({ error: 'Cena nemůže být záporná hodnota.' });
+        }
+
+        if (req.body.stock < 0) {
+            return res.status(400).json({ error: 'Počet kusů nemůže být v záporné hodnotě.' });
         }
 
         // Aktualizace produktu

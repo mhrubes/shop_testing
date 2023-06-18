@@ -29,6 +29,11 @@ const ShoppingCart = () => {
     if (isLoggedIn !== true) {
       navigate('/');
     }
+
+    if (shoppingCartItems.length === 0) {
+      navigate('/Main');
+    }
+
     return () => { }
   });
 
@@ -38,21 +43,21 @@ const ShoppingCart = () => {
       setShoppingCart(updatedShoppingCart);
       setShoppingCartItems(updatedShoppingCart);
     };
-  
+
     const delay = setTimeout(updateShoppingCart, 500);
-  
+
     return () => clearTimeout(delay);
   }, [products, shoppingCart]);
 
-  const handleUpdateShoppingCartItem = (itemId, operation) => {
-    if (operation)
+  const handleUpdateShoppingCartItem = (itemId, operation, count, stock) => {
+    if (operation && stock > 0)
       updateShoppingCartItem(itemId, operation);
-    else
+    else if (!operation && count >= 0)
       updateShoppingCartItem(itemId, operation);
   }
 
-  const handleDeleteShoppingCartItem = (itemId) => {
-    deleteShoppingCartItem(itemId);
+  const handleDeleteShoppingCartItem = (itemId, item) => {
+    deleteShoppingCartItem(itemId, item);
   }
 
   const handleEmptyShoppingCart = () => {
@@ -78,22 +83,23 @@ const ShoppingCart = () => {
             <div className="card text-center">
               <div className="card-body">
                 <div style={{ textAlign: 'right' }}>
-                  <button className='btn' onClick={() => handleDeleteShoppingCartItem(item._id)}>
+                  <button className='btn' onClick={() => handleDeleteShoppingCartItem(item._id, item)}>
                     <FontAwesomeIcon icon={faXmark} style={{ fontSize: "20px" }} />
                   </button>
                 </div>
 
                 <h5 className="card-title">{item.name}</h5>
-                <p className="card-title">Počet: {item.count}</p>
                 <p className="card-text">Cena: {item.price}</p>
+                <p className="card-text">Kusů na skladě: {item.stock}</p>
                 <hr />
+                <p className="card-title">V košíku: {item.count}</p>
                 <p className="card-text">Celková Cena: {item.price * item.count}</p>
 
-                <button className={`btn btn-outline-danger m-1 ${item.count === 1 ? "disabled" : "enabled"}`} onClick={() => handleUpdateShoppingCartItem(item._id, false)}>
+                <button className={`btn btn-outline-danger m-1 ${item.count === 0 ? "disabled" : "enabled"}`} onClick={() => handleUpdateShoppingCartItem(item._id, false, item.count, item.stock)}>
                   <FontAwesomeIcon icon={faMinus} />
                 </button>
 
-                <button className='btn btn-outline-success m-1' onClick={() => handleUpdateShoppingCartItem(item._id, true)}>
+                <button className={`btn btn-outline-success m-1 ${item.stock > 0 ? "enabled" : "disabled"}`} onClick={() => handleUpdateShoppingCartItem(item._id, true, item.count, item.stock)}>
                   <FontAwesomeIcon icon={faPlus} />
                 </button>
               </div>
@@ -107,9 +113,9 @@ const ShoppingCart = () => {
         <table className='table mt-3'>
           <thead>
             <tr>
-              <th scope="col">Název</th>
-              <th scope="col">Cena</th>
-              <th scope="col">Počet</th>
+              <th scope="col">Název produktu</th>
+              <th scope="col">V košíku</th>
+              <th scope="col">Cena/ks</th>
               <th scope="col">Součet</th>
             </tr>
           </thead>
@@ -117,8 +123,8 @@ const ShoppingCart = () => {
             {shoppingCartItems !== [] && shoppingCartItems.map((item) => (
               <tr key={item._id}>
                 <td>{item.name}</td>
-                <td>{item.price}</td>
                 <td>{item.count}</td>
+                <td>{item.price}</td>
                 <td>{item.price * item.count}</td>
               </tr>
             ))}

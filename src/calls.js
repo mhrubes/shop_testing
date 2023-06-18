@@ -38,6 +38,43 @@ const deleteShopProduct = async (productId) => {
     }
 };
 
+// category API
+const getAllCategory = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/category/getAllCategory`);
+        return response.data;
+    } catch (error) {
+        throw new Error('Chyba při načítání kategorií');
+    }
+};
+
+const createCategory = async (category) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/category/createCategory`, category);
+        return response.data;
+    } catch (error) {
+        throw new Error('Chyba při vytváření kategorie');
+    }
+};
+
+const updateCategory = async (category) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/category/updateCategory`, category);
+        return response.data;
+    } catch (error) {
+        throw new Error('Chyba při aktualizaci kategorie', error);
+    }
+};
+
+const deleteCategory = async (categoryId) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/category/deleteCategory`, { data: { _id: categoryId } });
+        return response.data;
+    } catch (error) {
+        throw new Error('Chyba při mazání kategorie', error);
+    }
+};
+
 // users API
 const getAllUsers = async () => {
     try {
@@ -50,5 +87,6 @@ const getAllUsers = async () => {
 
 export {
     getAllShopProducts, createShopProduct, updateShopProduct, deleteShopProduct,
+    getAllCategory, createCategory, updateCategory, deleteCategory,
     getAllUsers
 };
