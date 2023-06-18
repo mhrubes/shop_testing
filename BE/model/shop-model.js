@@ -14,11 +14,27 @@ const productCreateSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false,
     minlength: 0,
     maxlength: 1000,
   },
   price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  category: {
+    type: String,
+    required: true,
+    minlength: 3,
+    maxlength: 20,
+  },
+  __v: {
     type: Number,
     required: true,
     min: 0,
@@ -39,11 +55,27 @@ const productUpdateSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false,
     minlength: 0,
     maxlength: 1000,
   },
   price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  category: {
+    type: String,
+    required: true,
+    minlength: 3,
+    maxlength: 20,
+  },
+  __v: {
     type: Number,
     required: true,
     min: 0,

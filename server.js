@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const shopRoutes = require('./BE/routes/shop-routes');
 const userRoutes = require('./BE/routes/user-routes');
+const categoryRoutes = require('./BE/routes/category-routes');
 const cors = require('cors');
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(express.json());
 
 app.use('/shop', shopRoutes);
 app.use('/users', userRoutes);
+app.use('/category', categoryRoutes);
 
 // Handle React routing
 app.get('*', (req, res) => {

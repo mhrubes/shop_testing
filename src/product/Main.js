@@ -5,18 +5,35 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingBasket, faTrash, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import { Modal } from 'react-bootstrap';
+import Select from 'react-select';
 
 const Main = () => {
-    const { products, addProduct, updateProduct, removeProduct, handleLogout, isLoggedIn, userRole, shoppingCart, addToShoppingCart } = useContext(AppContext);
+    const {
+        products, addProduct, updateProduct, removeProduct,
+        categories,
+        isLoading,
+        handleLogout, isLoggedIn, userRole,
+        shoppingCart, addToShoppingCart } = useContext(AppContext);
+
     const navigate = useNavigate();
     const [shoppingCartItemCount, setShoppingCartItemCount] = useState(0);
 
     const [modalProductName, setModalProductName] = useState('');
-    const [modalProductDescription, setModalProductDescription] = useState(" ");
+    const [modalProductDescription, setModalProductDescription] = useState("");
     const [modalProductPrice, setModalProductPrice] = useState(0);
+    const [modalProductStock, setModalProductStock] = useState(0);
     const [modalProductIdOnUpdate, setModalProductIdOnUpdate] = useState(null);
     const [modalCreateOpen, setModalCreateOpen] = useState(false);
     const [modalDetailOpen, setModalDetailOpen] = useState(false);
+
+    const categoryOptions = categories
+        .filter(category => category.active)
+        .map(category => ({ value: category._id, label: category.name }));
+
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const handleCategoryChange = (selectedOptions) => {
+        setSelectedCategories(selectedOptions);
+    };
 
     useEffect(() => {
         let counter = 0;
@@ -40,6 +57,8 @@ const Main = () => {
             setModalProductName(product?.name);
             setModalProductDescription(product?.description);
             setModalProductPrice(product?.price);
+            setModalProductStock(product?.stock);
+            setSelectedCategories(product?.category)
         }
         else {
             setModalDetailOpen(false);
@@ -47,6 +66,8 @@ const Main = () => {
             setModalProductName('');
             setModalProductDescription('');
             setModalProductPrice(0);
+            setModalProductStock(0);
+            setSelectedCategories([])
         }
     };
 
@@ -65,6 +86,12 @@ const Main = () => {
                 setModalProductName(productExist?.name);
                 setModalProductDescription(productExist?.description);
                 setModalProductPrice(productExist?.price);
+                setModalProductStock(productExist?.stock);
+
+                const existingCategory = categories.find((category) => category.name === productExist.category);
+                const selectedCategory = existingCategory ? { value: existingCategory._id, label: existingCategory.name } : null;
+                setSelectedCategories(selectedCategory ? [selectedCategory] : []);
+
                 setModalCreateOpen(true);
             }
         }
@@ -79,13 +106,21 @@ const Main = () => {
             if (existingProductName === undefined &&
                 (modalProductName.length >= 2 && modalProductName.length < 1000) &&
                 (modalProductDescription.length < 1000) &&
-                (modalProductPrice >= 0 && !isNaN(modalProductPrice))) {
+                (modalProductPrice >= 0 && !isNaN(modalProductPrice)) &&
+                (modalProductStock >= 0 && !isNaN(modalProductStock)) &&
+                (selectedCategories.length !== 0)) {
                 product.name = modalProductName;
-                product.description = modalProductDescription;
+                product.description = modalProductDescription === "" ? "" : modalProductDescription;
                 product.price = modalProductPrice;
+                product.stock = modalProductStock;
+                product.category = Array.isArray(selectedCategories) ? selectedCategories[0].label : selectedCategories.label;
+                product.__v = 0
 
                 if (modalProductIdOnUpdate !== null &&
-                    (productFromArray.name !== modalProductName || productFromArray.description !== modalProductDescription || productFromArray.price !== modalProductPrice)) {
+                    (
+                        productFromArray.name !== modalProductName || productFromArray.description !== modalProductDescription ||
+                        productFromArray.price !== modalProductPrice || modalProductStock !== productFromArray.stock || selectedCategories !== productFromArray.category)) {
+
                     product._id = modalProductIdOnUpdate;
                     updateProduct(product);
                 }
@@ -96,6 +131,8 @@ const Main = () => {
                 setModalProductName('');
                 setModalProductDescription('');
                 setModalProductPrice(0);
+                setModalProductStock(0);
+                setSelectedCategories([])
                 setModalProductIdOnUpdate(null);
                 setModalCreateOpen(false);
             }
@@ -109,6 +146,8 @@ const Main = () => {
         setModalProductName('');
         setModalProductDescription('');
         setModalProductPrice(0);
+        setModalProductStock(0);
+        setSelectedCategories([])
         setModalProductIdOnUpdate(null);
         setModalCreateOpen(false);
     }
@@ -165,8 +204,20 @@ const Main = () => {
                                         <input className="form-control" type='number' id="price-text" value={modalProductPrice} onChange={(e) => setModalProductPrice(e.target.value)} />
                                     </div>
                                     <div className="form-group">
+                                        <label htmlFor="stock-text" className="col-form-label">Počet kusů:</label>
+                                        <input className="form-control" type='number' id="stock-text" value={modalProductStock} onChange={(e) => setModalProductStock(e.target.value)} />
+                                    </div>
+                                    <div className="form-group">
                                         <label htmlFor="description-text" className="col-form-label">Popis produktu:</label>
                                         <textarea className="form-control" id="description-text" value={modalProductDescription} onChange={(e) => setModalProductDescription(e.target.value)}></textarea>
+                                    </div>
+                                    <div className="form-group mt-2">
+                                        <Select
+                                            isMulti={false}
+                                            options={categoryOptions}
+                                            value={selectedCategories}
+                                            onChange={handleCategoryChange}
+                                        />
                                     </div>
                                 </div>
                                 <div className="modal-footer">
@@ -194,7 +245,13 @@ const Main = () => {
                                         <label htmlFor="product-name" className="col-form-label">Název produktu: <strong>{modalProductName}</strong> </label>
                                     </div>
                                     <div className="form-group">
+                                        <label htmlFor="category-name" className="col-form-label">Kategorie produktu: <strong>{selectedCategories}</strong> </label>
+                                    </div>
+                                    <div className="form-group">
                                         <label htmlFor="product-name" className="col-form-label">Cena produktu: <strong>{modalProductPrice}</strong> </label>
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="product-name" className="col-form-label">Počet kusů: <strong>{modalProductStock}</strong> </label>
                                     </div>
                                     <div className="form-group">
                                         <label htmlFor="product-name" className="col-form-label">Popis produktu: ({modalProductDescription.length} znaků)</label>
@@ -215,14 +272,18 @@ const Main = () => {
                 </Modal.Footer>
             </Modal>
 
-            <div className="row m-0">
+
+            {isLoading ? <div className='text-center'>Produkty se načítají..</div> : <div className="row m-0">
                 {products.map((product) => (
                     <div key={product._id} className="col-md-4 p-1">
                         <div className="card text-center">
                             <div className="card-body">
                                 <div style={{ textAlign: 'right' }}>
-                                    <button className='btn' onClick={() => handleAddToShoppingCart(product._id)}>
-                                        <FontAwesomeIcon icon={faShoppingBasket} style={{ fontSize: '20px' }} />
+                                    <button className="btn" onClick={() => handleAddToShoppingCart(product._id)}>
+                                        {product.stock}<small>ks</small>
+                                        {product.stock > 0 &&
+                                            <FontAwesomeIcon icon={faShoppingBasket} style={{ fontSize: '20px' }} />
+                                        }
                                     </button>
                                 </div>
                                 <h5 className="card-title">{product.name}</h5>
@@ -249,7 +310,9 @@ const Main = () => {
                     </div>
                 ))}
             </div>
+            }
         </div>
+
     );
 };
 
